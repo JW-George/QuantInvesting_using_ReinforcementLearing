@@ -194,6 +194,7 @@ def calc_mdd(list_x, list_pv):
     return (arr_pv[peak_lower] - arr_pv[peak_upper]) / arr_pv[peak_upper]
 
 def preprocess(data):
+    
     windows = [5, 10, 20, 60, 120]
     for window in windows:
         data['close_ma{}'.format(window)] = \
@@ -207,26 +208,38 @@ def preprocess(data):
             (data['volume'] - data['volume_ma%d' % window]) \
             / data['volume_ma%d' % window]
 
-    data['open_lastclose_ratio'] = np.zeros(len(data))
-    data.loc[1:, 'open_lastclose_ratio'] = \
-        (data['open'][1:].values - data['close'][:-1].values) \
+    # data['open_lastclose_ratio'] = np.zeros(len(data))
+    # data.loc[1:, 'open_lastclose_ratio'] = \
+    #     (data['open'][1:].values - data['close'][:-1].values) \
+    #     / data['close'][:-1].values
+    tmp = (data['open'][1:].values - data['close'][:-1].values) \
         / data['close'][:-1].values
+    data['open_lastclose_ratio'] = np.insert(tmp, 0, 0.0)
     data['high_close_ratio'] = \
         (data['high'].values - data['close'].values) \
         / data['close'].values
     data['low_close_ratio'] = \
         (data['low'].values - data['close'].values) \
         / data['close'].values
-    data['close_lastclose_ratio'] = np.zeros(len(data))
-    data.loc[1:, 'close_lastclose_ratio'] = \
-        (data['close'][1:].values - data['close'][:-1].values) \
+    # data['close_lastclose_ratio'] = np.zeros(len(data))
+    # data.loc[1:, 'close_lastclose_ratio'] = \
+    #     (data['close'][1:].values - data['close'][:-1].values) \
+    #     / data['close'][:-1].values
+    tmp = (data['close'][1:].values - data['close'][:-1].values) \
         / data['close'][:-1].values
-    data['volume_lastvolume_ratio'] = np.zeros(len(data))
-    data.loc[1:, 'volume_lastvolume_ratio'] = \
-        (data['volume'][1:].values - data['volume'][:-1].values) \
+    data['close_lastclose_ratio'] = np.insert(tmp, 0, 0.0)
+    # data['volume_lastvolume_ratio'] = np.zeros(len(data))
+    # data.loc[1:, 'volume_lastvolume_ratio'] = \
+    #     (data['volume'][1:].values - data['volume'][:-1].values) \
+    #     / data['volume'][:-1] \
+    #         .replace(to_replace=0, method='ffill') \
+    #         .replace(to_replace=0, method='bfill').values
+    tmp =(data['volume'][1:].values - data['volume'][:-1].values) \
         / data['volume'][:-1] \
             .replace(to_replace=0, method='ffill') \
             .replace(to_replace=0, method='bfill').values
+    data['volume_lastvolume_ratio'] = np.insert(tmp, 0, 0.0)
+
 
     for window in windows:
         data[f'inst_ma{window}'] = data['close'].rolling(window).mean()
@@ -235,14 +248,69 @@ def preprocess(data):
             (data['close'] - data[f'inst_ma{window}']) / data[f'inst_ma{window}']
         #data[f'frgn_ma{window}_ratio'] = \
         #    (data['volume'] - data[f'frgn_ma{window}']) / data[f'frgn_ma{window}']
-        data['inst_lastinst_ratio'] = np.zeros(len(data))
-        data.loc[1:, 'inst_lastinst_ratio'] = (
-            (data['inst'][1:].values - data['inst'][:-1].values)
+        # data['inst_lastinst_ratio'] = np.zeros(len(data))
+        # data.loc[1:, 'inst_lastinst_ratio'] = (
+        #     (data['inst'][1:].values - data['inst'][:-1].values)
+        #     / data['inst'][:-1].replace(to_replace=0, method='ffill')\
+        #         .replace(to_replace=0, method='bfill').values
+        # )
+        tmp = ((data['inst'][1:].values - data['inst'][:-1].values)
             / data['inst'][:-1].replace(to_replace=0, method='ffill')\
-                .replace(to_replace=0, method='bfill').values
-        )
+                .replace(to_replace=0, method='bfill').values)
+        data['inst_lastinst_ratio'] = np.insert(tmp, 0, 0.0)
         data[f'ind_ma{window}'] = data['ind'].rolling(window).mean()
         data[f'foreign_ma{window}'] = data['foreign'].rolling(window).mean()
+
+
+    # windows = [5, 10, 20, 60, 120]
+    # for window in windows:
+    #     data['close_ma{}'.format(window)] = \
+    #         data['close'].rolling(window).mean()
+    #     data['volume_ma{}'.format(window)] = \
+    #         data['volume'].rolling(window).mean()
+    #     data['close_ma%d_ratio' % window] = \
+    #         (data['close'] - data['close_ma%d' % window]) \
+    #         / data['close_ma%d' % window]
+    #     data['volume_ma%d_ratio' % window] = \
+    #         (data['volume'] - data['volume_ma%d' % window]) \
+    #         / data['volume_ma%d' % window]
+
+    # data['open_lastclose_ratio'] = np.zeros(len(data))
+    # data.loc[1:, 'open_lastclose_ratio'] = \
+    #     (data['open'][1:].values - data['close'][:-1].values) \
+    #     / data['close'][:-1].values
+    # data['high_close_ratio'] = \
+    #     (data['high'].values - data['close'].values) \
+    #     / data['close'].values
+    # data['low_close_ratio'] = \
+    #     (data['low'].values - data['close'].values) \
+    #     / data['close'].values
+    # data['close_lastclose_ratio'] = np.zeros(len(data))
+    # data.loc[1:, 'close_lastclose_ratio'] = \
+    #     (data['close'][1:].values - data['close'][:-1].values) \
+    #     / data['close'][:-1].values
+    # data['volume_lastvolume_ratio'] = np.zeros(len(data))
+    # data.loc[1:, 'volume_lastvolume_ratio'] = \
+    #     (data['volume'][1:].values - data['volume'][:-1].values) \
+    #     / data['volume'][:-1] \
+    #         .replace(to_replace=0, method='ffill') \
+    #         .replace(to_replace=0, method='bfill').values
+
+    # for window in windows:
+    #     data[f'inst_ma{window}'] = data['close'].rolling(window).mean()
+    #     #data[f'frgn_ma{window}'] = data['volume'].rolling(window).mean()
+    #     data[f'inst_ma{window}_ratio'] = \
+    #         (data['close'] - data[f'inst_ma{window}']) / data[f'inst_ma{window}']
+    #     #data[f'frgn_ma{window}_ratio'] = \
+    #     #    (data['volume'] - data[f'frgn_ma{window}']) / data[f'frgn_ma{window}']
+    #     data['inst_lastinst_ratio'] = np.zeros(len(data))
+    #     data.loc[1:, 'inst_lastinst_ratio'] = (
+    #         (data['inst'][1:].values - data['inst'][:-1].values)
+    #         / data['inst'][:-1].replace(to_replace=0, method='ffill')\
+    #             .replace(to_replace=0, method='bfill').values
+    #     )
+    #     data[f'ind_ma{window}'] = data['ind'].rolling(window).mean()
+    #     data[f'foreign_ma{window}'] = data['foreign'].rolling(window).mean()
 
     return data
 
