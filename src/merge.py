@@ -8,7 +8,7 @@ import pandas_datareader.data as web
 
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-plt.style.use('bmhd')
+plt.style.use('default')
 
 from src import settings, utils, data_manager
 
